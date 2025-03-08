@@ -6,7 +6,7 @@ Bumblebee is an AI-powered Python package that enables **realistic, human-like c
 ## ✨ Features  
 ✅ **AI-Powered Cursor Movement** – Uses an RNN with LSTM to generate smooth, human-like paths.  
 ✅ **Smart Keystroke Simulation** – Factors in key distances, punctuation, and natural typing behavior.  
-✅ **30K Self-Collected Dataset** – Trained on real human movement data.  
+✅ **25K+ Self-Collected Dataset** – Trained on real human movement data.  
 ✅ **Upcoming: Reinforcement Learning (RL) Enhancements** – Will further refine movement realism.  
 ✅ **Uses PyAutoGUI** – Leverages PyAutoGUI for actual mouse and keyboard input simulation.  
 ✅ **Built with PyTorch** – AI models are developed using PyTorch for deep learning.  

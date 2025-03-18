@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 import os
-from bumblebee.ai import RNN, Attention
+from bumblebee.ai.rnn import CursorRNN as RNN
 
 
 class Predictor:
@@ -28,14 +28,14 @@ class Predictor:
         and sets the model to evaluation mode.
         """
         # Constants for normalization
-        self.MAX_COORDINATE = 4096  # will allow for 4K resolution, taken from training notebook: `rnn-train.ipynb`
+        self.MAX_COORDINATE = 1980 # max resolution used in data collection was 1980x1080p so 1980 is used in training process,taken from training notebook: `rnn-train.ipynb`
         self.MIN_COORDINATE = 0
 
         # Constant for RNN model
         self.INPUT_DIM = 4  # Start (x, y) and Destination (x, y) coordinates
         self.HIDDEN_DIM = 512
         self.STEPS = 39  # Number of intemediate steps between start and destination
-        self.OUTPUT_DIM = 78  # 2 coordinates (x, y) for each of the 39 steps
+        self.OUTPUT_DIM = self.STEPS * 2  # 2 coordinates (x, y) for each steps
         self.LSTM_LAYERS = 2
 
         self.device = torch.device(
@@ -74,7 +74,7 @@ class Predictor:
         """
         return data * (self.MAX_COORDINATE - self.MIN_COORDINATE) + self.MIN_COORDINATE
 
-    def __predict(
+    def _predict(
         self, start: list[int, int], destination: list[int, int]
     ) -> np.ndarray:
         """
@@ -94,10 +94,11 @@ class Predictor:
         input_data = start + destination
 
         # Convert the combined coordinates list to a NumPy array with float32 type for precision
-        input_arr = np.array(input_data, dtype=np.float32)
+        input_arr = np.array([input_data], dtype=np.float32) # Don't try to remove [] from here, it will break the code
 
         # Normalize the input array to be within the [0, 1] range for model compatibility
-        input_normalized_arr = self.normalize(input_arr)
+        input_normalized_arr = self.__normalize(input_arr)
+        print(input_normalized_arr)
 
         # Convert the normalized array to a PyTorch tensor, send it to the appropriate device, and add a dimension for batch processing (unsqueeze simulates a batch of size 1)
         input_tensor = torch.tensor(input_normalized_arr).to(self.device).unsqueeze(1)
@@ -114,11 +115,13 @@ class Predictor:
         del input_tensor
 
         # Reshape the output to match the expected dimensions and move it to CPU
-        predicted_output = (
-            predicted_output[0].view([self.steps_needed, 2]).cpu().numpy()
-        )
+        output = output[0].view([self.STEPS, 2]).cpu().numpy()
+
+        print(output)
+
         # Denormalize the output to convert it back to the original coordinate range
+        output = self.__denormalize(output)
 
-        predicted_output = self.__denormalize(predicted_output)
+        return output
 
-        return predicted_output
+    

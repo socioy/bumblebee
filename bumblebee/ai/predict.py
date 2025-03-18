@@ -60,7 +60,7 @@ class Predictor:
             )
         self.model.eval()
 
-    def normalize(self, data: int | float) -> float:
+    def __normalize(self, data: int | float) -> float:
         """
         Normalize coordinates to [0,1] range for model input
         """
@@ -68,8 +68,57 @@ class Predictor:
             self.MAX_COORDINATE - self.MIN_COORDINATE
         )
 
-    def denormalize(self, data: int | float) -> float:
+    def __denormalize(self, data: int | float) -> float:
         """
         Denormalize coordinates from [0,1] range to original range
         """
         return data * (self.MAX_COORDINATE - self.MIN_COORDINATE) + self.MIN_COORDINATE
+
+    def __predict(
+        self, start: list[int, int], destination: list[int, int]
+    ) -> np.ndarray:
+        """
+        Predict the intermediate path steps between the start and destination coordinates.
+
+        Parameters:
+            start (list[int, int]): The starting coordinate as [x, y].
+            destination (list[int, int]): The destination coordinate as [x, y].
+
+        Returns:
+            np.ndarray: The predicted intermediate steps of the path.
+
+        This method uses the pre-trained RNN model to generate intermediate steps between the start
+        and destination. The input coordinates are normalized before being fed into the model.
+        """
+        # Combine start and destination coordinates into a single list
+        input_data = start + destination
+
+        # Convert the combined coordinates list to a NumPy array with float32 type for precision
+        input_arr = np.array(input_data, dtype=np.float32)
+
+        # Normalize the input array to be within the [0, 1] range for model compatibility
+        input_normalized_arr = self.normalize(input_arr)
+
+        # Convert the normalized array to a PyTorch tensor, send it to the appropriate device, and add a dimension for batch processing (unsqueeze simulates a batch of size 1)
+        input_tensor = torch.tensor(input_normalized_arr).to(self.device).unsqueeze(1)
+
+        # Clean up intermediate arrays to free memory
+        del input_arr
+        del input_normalized_arr
+
+        with torch.no_grad():
+            # Pass the input tensor through the model to get the output
+            output = self.model(input_tensor)
+
+        # Clean up the input tensor to free memory
+        del input_tensor
+
+        # Reshape the output to match the expected dimensions and move it to CPU
+        predicted_output = (
+            predicted_output[0].view([self.steps_needed, 2]).cpu().numpy()
+        )
+        # Denormalize the output to convert it back to the original coordinate range
+
+        predicted_output = self.__denormalize(predicted_output)
+
+        return predicted_output

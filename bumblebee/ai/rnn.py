@@ -5,12 +5,12 @@ This file contains the code for neural network models used in the project. They 
 import torch
 import torch.nn as nn
 
-
 """
 Attention and CursorRNN are copied from 'rnn-train.ipynb' notebook
 Attention class is used to compute the attention weights and context vector
 CursorRNN class is the main model that combines LSTM, attention, and residual connections to predict the path
 """
+
 
 class Attention(nn.Module):
     def __init__(self, hidden_dim):

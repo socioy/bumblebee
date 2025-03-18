@@ -3,9 +3,6 @@ import torch
 import torch.nn as nn
 
 
-
-
-
 class Mouse:
     def __init__(self):
         pass

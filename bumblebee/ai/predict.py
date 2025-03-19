@@ -2,6 +2,7 @@ import os
 
 import numpy as np
 import torch
+from scipy.interpolate import interp1d
 from scipy.ndimage import gaussian_filter1d
 
 from bumblebee.ai.rnn import CursorRNN as RNN
@@ -77,16 +78,44 @@ class Predictor:
         """
         return data * (self.MAX_COORDINATE - self.MIN_COORDINATE) + self.MIN_COORDINATE
 
-    def __calculate_distance(self, point1: list, point2: list) -> float:
+    def __calculate_distance(self, point1: np.ndarray, point2: np.ndarray) -> float:
         """
         Calculate the Euclidean distance between two points in 2D space.
         Parameters:
-            point1 (list): The first point as [x1, y1].
-            point2 (list): The second point as [x2, y2].
+            point1 (np.ndarray): The first point as [x1, y1].
+            point2 (np.ndarray): The second point as [x2, y2].
         Returns:
             float: The Euclidean distance between point1 and point2.
         """
-        return np.linalg.norm(np.array(point1) - np.array(point2))
+        return np.linalg.norm(point1 - point2)
+
+    def __calculate_angle(
+        self, point1: np.ndarray, point2: np.ndarray, point3: np.ndarray
+    ) -> float:
+        """
+        Calculate the angle between three points in 2D space.
+        Parameters:
+            point1 (np.ndarray): The first point as [x1, y1].
+            point2 (np.ndarray): The second point as [x2, y2].
+            point3 (np.ndarray): The third point as [x3, y3].
+        Returns:
+            float: The angle in radians between the line segments formed by point1-point2 and point2-point3.
+        """
+        vector1 = point2 - point1
+        vector2 = point3 - point2
+
+        dot_product = np.dot(vector1, vector2)
+        magnitude1 = np.linalg.norm(vector1)
+        magnitude2 = np.linalg.norm(vector2)
+
+        if magnitude1 == 0 or magnitude2 == 0:
+            return 0.0
+        cos_angle = dot_product / (magnitude1 * magnitude2)
+        cos_angle = np.clip(
+            cos_angle, -1.0, 1.0
+        )  # Ensure the value is within the valid range for arccos
+        angle = np.arccos(cos_angle)
+        return angle
 
     def __clean_path(self, path: np.ndarray, min_distance=10) -> np.ndarray:
         """
@@ -152,15 +181,38 @@ class Predictor:
         smoothed_y = gaussian_filter1d(smoothed_y, sigma=0.5)
         return np.column_stack((smoothed_x, smoothed_y))
 
-    def _predict(
-        self, start: list[int, int], destination: list[int, int]
-    ) -> np.ndarray:
+    def __interploate_path(self, path: np.ndarray, num_points=50) -> np.ndarray:
+        """
+        Interpolate the predicted path to have a fixed number of intermediate points for smoother transitions.
+        Parameters:
+            path (np.ndarray): The predicted path as an array of shape (STEPS, 2).
+            num_points (int): The number of points to interpolate to.
+        Returns:
+            np.ndarray: The interpolated path with a fixed number of points.
+        """
+        try:
+            x = path[:, 0]
+            y = path[:, 1]
+            t = np.linspace(0, 1, len(x))
+
+            interp_func_x = interp1d(t, x, kind="linear")
+            interp_func_y = interp1d(t, y, kind="linear")
+
+            t_new = np.linspace(0, 1, num_points)
+            x_new = interp_func_x(t_new)
+            y_new = interp_func_y(t_new)
+
+            return np.column_stack((x_new, y_new))
+        except Exception as e:
+            print(f"Interpolation failed: {e}")
+            return path
+
+    def __predict_path(self, input_arr: np.ndarray) -> np.ndarray:
         """
         Predict the intermediate path steps between the start and destination coordinates.
 
         Parameters:
-            start (list[int, int]): The starting coordinate as [x, y].
-            destination (list[int, int]): The destination coordinate as [x, y].
+            input_arr (np.ndarray): The input data containing start and destination coordinates. e.g [[start_x, start_y, dest_x, dest_y]]
 
         Returns:
             np.ndarray: The predicted intermediate steps of the path.
@@ -168,17 +220,9 @@ class Predictor:
         This method uses the pre-trained RNN model to generate intermediate steps between the start
         and destination. The input coordinates are normalized before being fed into the model.
         """
-        # Combine start and destination coordinates into a single list
-        input_data = start + destination
-
-        # Convert the combined coordinates list to a NumPy array with float32 type for precision
-        input_arr = np.array(
-            [input_data], dtype=np.float32
-        )  # Don't try to remove [] from here, it will break the code
 
         # Normalize the input array to be within the [0, 1] range for model compatibility
         input_normalized_arr = self.__normalize(input_arr)
-        print(input_normalized_arr)
 
         # Convert the normalized array to a PyTorch tensor, send it to the appropriate device, and add a dimension for batch processing (unsqueeze simulates a batch of size 1)
         input_tensor = torch.tensor(input_normalized_arr).to(self.device).unsqueeze(1)
@@ -201,3 +245,55 @@ class Predictor:
         output = self.__denormalize(output)
 
         return output
+
+    def __add_speed_factor(self, path: np.ndarray) -> np.ndarray:
+        """
+        Add speed factor to the predicted path to simulate variable speed along the path.
+        Parameters:
+            path (np.ndarray): The predicted path as an array of shape (STEPS, 2).
+        Returns:
+            np.ndarray: The path with speed factor applied to simulate variable speed, with shape (STEPS, 3).
+        """
+        path_with_speed = np.zeros((len(path), 3), dtype=np.float64)
+        for i in range(len(path)):
+            progress = i / (len(path) - 1)
+            angle = (
+                self.__calculate_angle(path[i - 1], path[i], path[i + 1])
+                if i > 0 and i < len(path) - 1
+                else 0
+            )
+
+            angle_speed_factor = (1 - angle / np.pi) * 0.5
+            progress_speed_factor = self.__calculate_speed_factor(progress)
+
+            speed_factor = angle_speed_factor * progress_speed_factor
+            path_with_speed[i] = np.array([path[i][0], path[i][1], speed_factor])
+        return path_with_speed
+
+    def predict(self, start: np.ndarray, dest: np.ndarray) -> np.ndarray:
+        """
+        Predict the path from start to destination coordinates.
+
+        Parameters:
+            start (np.ndarray): The starting coordinates as [x, y].
+            dest (np.ndarray): The destination coordinates as [x, y].
+
+        Returns:
+            np.ndarray: The predicted path with speed factor as an array of shape (STEPS, 3).
+        """
+        # Combine start and destination coordinates into a single input array
+        input_arr = np.array(
+            [start + dest], dtype=np.float32
+        )  # Don't try to remove [] from here, it will break the code
+
+        # Predict the intermediate path using the model
+        path = self.__predict_path(input_arr)
+        path = self.__clean_path(path)
+
+        path = self.__interploate_path(path)
+        path = self.__smooth_path(path)
+        path = np.vstack([start, path, dest])
+
+        path = self.__add_speed_factor(path)
+
+        return path

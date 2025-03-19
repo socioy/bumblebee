@@ -3,6 +3,4 @@ from bumblebee.ai.predict import Predictor
 
 m = Mouse()
 p = Predictor()
-path = p._predict([59, 800], [90, 129])
-
-print(path)
+path = p.predict([100, 700], [700, 60])

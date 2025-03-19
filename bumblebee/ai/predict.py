@@ -293,7 +293,8 @@ class Predictor:
         path = self.__interploate_path(path)
         path = self.__smooth_path(path)
         path = np.vstack([start, path, dest])
-
+        path = self.__interploate_path(path)
+        
         path = self.__add_speed_factor(path)
 
         return path

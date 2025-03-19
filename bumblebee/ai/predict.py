@@ -2,6 +2,7 @@ import numpy as np
 import torch
 import os
 from bumblebee.ai.rnn import CursorRNN as RNN
+from scipy.ndimage import gaussian_filter1d
 
 
 class Predictor:
@@ -84,6 +85,70 @@ class Predictor:
             float: The Euclidean distance between point1 and point2.
         """
         return np.linalg.norm(np.array(point1) - np.array(point2))
+
+    def __clean_path(self, path: np.ndarray, min_distance=10) -> np.ndarray:
+        """
+        Clean the predicted path by removing points that are too close to each other.
+        Parameters:
+            path (np.ndarray): The predicted path as an array of shape (STEPS, 2).
+            min_distance (float): The minimum distance between consecutive points to keep them.
+        Returns:
+            np.ndarray: The cleaned path with points that are sufficiently spaced apart.
+        """
+        cleaned_path = [path[0]]  # Start with the first point
+        for i in range(1, len(path)):
+            if self.__calculate_distance(cleaned_path[-1], path[i]) >= min_distance:
+                cleaned_path.append(path[i])
+
+        return np.array(cleaned_path)
+
+    def __calculate_speed_factor(self, progress: float) -> float:
+        """
+        Calculate the speed factor based on the progress of the path.
+        Parameters:
+            progress (float): The progress of the path as a value between 0 and 1.
+        Returns:
+            float: The speed factor, which is higher for later progress in the path.
+        """
+        return 1.5 - np.cos(
+            progress * np.pi
+        )  # slower at start and end, faster in the middle
+
+    def __smooth_path(self, path: np.ndarray, noise_factor=0.03) -> np.ndarray:
+        """
+        Smooth the predicted path by applying Gaussian noise to the coordinates.
+        Parameters:
+            path (np.ndarray): The predicted path as an array of shape (STEPS, 2).
+            noise_factor (float): The standard deviation of the Gaussian noise to be added.
+        Returns:
+            np.ndarray: The smoothed path with Gaussian noise applied to the coordinates.
+        """
+        smoothed_x = gaussian_filter1d(
+            path[:, 0], sigma=1
+        )  # apply gaussian filter to x coordinates
+        smoothed_y = gaussian_filter1d(
+            path[:, 1], sigma=1
+        )  # apply gaussian filter to y coordinates
+
+        noise_x = np.random.normal(
+            0, noise_factor, size=smoothed_x.shape
+        )  # generate noise for x coordinates
+        noise_y = np.random.normal(
+            0, noise_factor, size=smoothed_y.shape
+        )  # generate noise for y coordinates
+
+        t = np.linspace(0, 1, len(smoothed_x))  # Normalized time variable
+        noise_decay = np.exp(-4 * t)  # Exponential decay function
+
+        # Here we are adding noise decay so that noise reduces as we move from start to end
+
+        smoothed_x += noise_x * noise_decay
+        smoothed_y += noise_y * noise_decay
+
+         # Apply final smoothing to prevent abrupt jumps
+        smoothed_x = gaussian_filter1d(smoothed_x, sigma=0.5)
+        smoothed_y = gaussian_filter1d(smoothed_y, sigma=0.5)
+        return np.column_stack((smoothed_x, smoothed_y))
 
     def _predict(
         self, start: list[int, int], destination: list[int, int]

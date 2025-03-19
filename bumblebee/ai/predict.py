@@ -28,7 +28,7 @@ class Predictor:
         and sets the model to evaluation mode.
         """
         # Constants for normalization
-        self.MAX_COORDINATE = 1980 # max resolution used in data collection was 1980x1080p so 1980 is used in training process,taken from training notebook: `rnn-train.ipynb`
+        self.MAX_COORDINATE = 1920  # max resolution used in data collection was 1920x1080p so 1980 is used in training process,taken from training notebook: `rnn-train.ipynb`
         self.MIN_COORDINATE = 0
 
         # Constant for RNN model
@@ -74,6 +74,17 @@ class Predictor:
         """
         return data * (self.MAX_COORDINATE - self.MIN_COORDINATE) + self.MIN_COORDINATE
 
+    def __calculate_distance(self, point1: list, point2: list) -> float:
+        """
+        Calculate the Euclidean distance between two points in 2D space.
+        Parameters:
+            point1 (list): The first point as [x1, y1].
+            point2 (list): The second point as [x2, y2].
+        Returns:
+            float: The Euclidean distance between point1 and point2.
+        """
+        return np.linalg.norm(np.array(point1) - np.array(point2))
+
     def _predict(
         self, start: list[int, int], destination: list[int, int]
     ) -> np.ndarray:
@@ -94,7 +105,9 @@ class Predictor:
         input_data = start + destination
 
         # Convert the combined coordinates list to a NumPy array with float32 type for precision
-        input_arr = np.array([input_data], dtype=np.float32) # Don't try to remove [] from here, it will break the code
+        input_arr = np.array(
+            [input_data], dtype=np.float32
+        )  # Don't try to remove [] from here, it will break the code
 
         # Normalize the input array to be within the [0, 1] range for model compatibility
         input_normalized_arr = self.__normalize(input_arr)
@@ -117,11 +130,7 @@ class Predictor:
         # Reshape the output to match the expected dimensions and move it to CPU
         output = output[0].view([self.STEPS, 2]).cpu().numpy()
 
-        print(output)
-
         # Denormalize the output to convert it back to the original coordinate range
         output = self.__denormalize(output)
 
         return output
-
-    

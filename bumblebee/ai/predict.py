@@ -1,8 +1,10 @@
+import os
+
 import numpy as np
 import torch
-import os
-from bumblebee.ai.rnn import CursorRNN as RNN
 from scipy.ndimage import gaussian_filter1d
+
+from bumblebee.ai.rnn import CursorRNN as RNN
 
 
 class Predictor:
@@ -145,7 +147,7 @@ class Predictor:
         smoothed_x += noise_x * noise_decay
         smoothed_y += noise_y * noise_decay
 
-         # Apply final smoothing to prevent abrupt jumps
+        # Apply final smoothing to prevent abrupt jumps
         smoothed_x = gaussian_filter1d(smoothed_x, sigma=0.5)
         smoothed_y = gaussian_filter1d(smoothed_y, sigma=0.5)
         return np.column_stack((smoothed_x, smoothed_y))

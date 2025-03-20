@@ -290,9 +290,10 @@ class Predictor:
 
             angle_speed_factor = (1 - angle / np.pi) * 0.5
             progress_speed_factor = self.__calculate_speed_factor(progress)
-
             speed_factor = angle_speed_factor * progress_speed_factor
+
             path_with_speed[i] = np.array([path[i][0], path[i][1], speed_factor])
+
         return path_with_speed
 
     def predict(self, start: np.ndarray, dest: np.ndarray) -> np.ndarray:
@@ -317,8 +318,19 @@ class Predictor:
         path = self.__clean_path(path)
 
         path = self.__smooth_path(path)
-        path = self.__interpolate_path(path)
+        interpolated_path = np.array([], dtype=np.float32)
 
+        # Interpolate the path to ensure smooth transitions, make sure that there are no jumps, if distance between two points is more than 20 pixels, we interpolate
+        for i in range(len(path)):
+            distance_with_previous_point = self.__calculate_distance(path[i], path[i - 1]) if i > 0 else 0
+            if distance_with_previous_point > 20:
+                current_num_points = int(distance_with_previous_point / 20)
+                current_interpolated_path = self.__interpolate_path(path[i - 1:i + 1], num_points=current_num_points)
+                interpolated_path = np.vstack([interpolated_path, current_interpolated_path]) if interpolated_path.size else current_interpolated_path
+            else:
+                interpolated_path = np.vstack([interpolated_path, path[i]]) if interpolated_path.size else path[i]
+
+        path = interpolated_path
         path = self.__add_speed_factor(path)
 
         return path

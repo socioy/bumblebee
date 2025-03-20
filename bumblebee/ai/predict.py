@@ -118,7 +118,7 @@ class Predictor:
         return angle
 
     def __clean_path(
-        self, path: np.ndarray, min_distance=10.0, devaition_threshold=100.0
+        self, path: np.ndarray, min_distance=10.0, devaition_threshold=50.0
     ) -> np.ndarray:
         """
         Clean the predicted path by removing points that are too close to each other.
@@ -331,6 +331,10 @@ class Predictor:
                 interpolated_path = np.vstack([interpolated_path, path[i]]) if interpolated_path.size else path[i]
 
         path = interpolated_path
-        path = self.__add_speed_factor(path)
+        if not np.array_equal(path[-1], dest):
+            path = np.vstack([path, dest])
+        if not np.array_equal(path[0], start):
+            path = np.vstack([start, path])
 
+        path = self.__add_speed_factor(path)
         return path

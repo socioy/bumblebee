@@ -32,7 +32,7 @@ class Predictor:
         and sets the model to evaluation mode.
         """
         # Constants for normalization
-        self.MAX_COORDINATE = 4096 # allows to use 4k display,taken from training notebook: `rnn-train.ipynb`
+        self.MAX_COORDINATE = 4096  # allows to use 4k display,taken from training notebook: `rnn-train.ipynb`
         self.MIN_COORDINATE = 0
 
         # Constant for RNN model
@@ -117,7 +117,9 @@ class Predictor:
         angle = np.arccos(cos_angle)
         return angle
 
-    def __clean_path(self, path: np.ndarray, min_distance=10.0, devaition_threshold = 100.0) -> np.ndarray:
+    def __clean_path(
+        self, path: np.ndarray, min_distance=10.0, devaition_threshold=100.0
+    ) -> np.ndarray:
         """
         Clean the predicted path by removing points that are too close to each other.
         Parameters:
@@ -132,7 +134,7 @@ class Predictor:
 
         cleaned_path = [start]  # Start with the first point
 
-        for i in range(1, len(path)-1):
+        for i in range(1, len(path) - 1):
             if self.__calculate_distance(cleaned_path[-1], path[i]) >= min_distance:
                 cleaned_path.append(path[i])
         cleaned_path.append(destination)  # Always add the last point
@@ -141,17 +143,17 @@ class Predictor:
         cleaned_path = np.array(cleaned_path)
         if len(cleaned_path) <= 2:
             return cleaned_path
-        previous_point_distance = float('inf')
+        previous_point_distance = float("inf")
         for i in range(len(cleaned_path)):
-            distance_to_dest =  self.__calculate_distance(cleaned_path[i], destination)
+            distance_to_dest = self.__calculate_distance(cleaned_path[i], destination)
             if distance_to_dest > previous_point_distance:
                 if distance_to_dest <= devaition_threshold:
-                    undeviated_path = np.append(undeviated_path, cleaned_path[i])    
+                    undeviated_path = np.append(undeviated_path, cleaned_path[i])
                     previous_point_distance = distance_to_dest
             else:
                 undeviated_path = np.append(undeviated_path, cleaned_path[i])
                 previous_point_distance = distance_to_dest
-        
+
         undeviated_path = undeviated_path.reshape(-1, 2)
 
         return undeviated_path
@@ -316,7 +318,7 @@ class Predictor:
 
         path = self.__smooth_path(path)
         path = self.__interpolate_path(path)
-        
+
         path = self.__add_speed_factor(path)
 
         return path

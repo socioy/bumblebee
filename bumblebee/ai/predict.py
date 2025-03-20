@@ -4,6 +4,7 @@ import numpy as np
 import torch
 from scipy.interpolate import interp1d
 from scipy.ndimage import gaussian_filter1d
+from scipy.special import gamma
 
 from bumblebee.ai.rnn import CursorRNN as RNN
 
@@ -160,15 +161,54 @@ class Predictor:
 
     def __calculate_speed_factor(self, progress: float) -> float:
         """
-        Calculate the speed factor based on the progress of the path.
+        Calculate the speed factor based on the progress of the path; uses gamma distribution.
         Parameters:
             progress (float): The progress of the path as a value between 0 and 1.
         Returns:
-            float: The speed factor, which is higher for later progress in the path.
+            float: The speed factor, which increases gradually and tapers off.
         """
-        return 1.5 - np.cos(
-            progress * np.pi
-        )  # slower at start and end, faster in the middle
+        # Parameters for gamma distribution
+        k = 1.8  # Shape parameter
+        theta = 1.0  # Scale parameter
+
+        # Precompute normalization factor over the scaled range [0, 10]
+        x = np.linspace(0, 10, 1000)  # Scaled progress range
+        y = (x ** (k - 1) * np.exp(-x / theta)) / (theta**k * gamma(k))
+        max_val = np.max(y)  # Maximum value for normalization
+
+        # Scale progress to fit gamma's natural range
+        scaled_progress = progress * 10
+
+        # Base gamma distribution
+        speed_factor = (
+            scaled_progress ** (k - 1) * np.exp(-scaled_progress / theta)
+        ) / (theta**k * gamma(k))
+        speed_factor = speed_factor / max_val  # Normalize
+
+        # Define flat region and transitions
+        flat_value = 1.0  # Base value for flat region
+        smooth_width = 0.15  # Transition width
+
+        # Precompute gamma curve values at key points for transitions
+        base_y = y / max_val  # Normalized base curve
+        x_0_05 = 0.05  # Start of lower transition
+        y_0_05 = base_y[np.searchsorted(x / 5, x_0_05)]  # Value at x = 0.05
+        y_1_0 = base_y[-1]  # Value at x = 1.0
+
+        # Apply flat region and transitions
+        if 0.20 <= progress <= 0.90:  # Flat region with noise
+            noise = np.random.uniform(-0.05, 0.0)  # Noise between -0.05 and 0
+            speed_factor = flat_value + noise
+
+        elif (0.20 - smooth_width) < progress < 0.20:  # Lower transition (0.05 to 0.20)
+            speed_factor = np.interp(
+                progress, [0.20 - smooth_width, 0.20], [y_0_05, flat_value]
+            )
+
+        elif 0.90 < progress < (0.90 + smooth_width):  # Upper transition (0.90 to 1.0)
+            speed_factor = np.interp(progress, [0.90, 1.0], [flat_value, y_1_0])
+
+        return speed_factor
 
     def __smooth_path(self, path: np.ndarray, noise_factor=0.03) -> np.ndarray:
         """
@@ -290,6 +330,9 @@ class Predictor:
 
             angle_speed_factor = (1 - angle / np.pi) * 0.5
             progress_speed_factor = self.__calculate_speed_factor(progress)
+            print(progress, end=", ")
+            # print(angle, end = ", ")
+            print(progress_speed_factor)
             speed_factor = angle_speed_factor * progress_speed_factor
 
             path_with_speed[i] = np.array([path[i][0], path[i][1], speed_factor])
@@ -322,13 +365,25 @@ class Predictor:
 
         # Interpolate the path to ensure smooth transitions, make sure that there are no jumps, if distance between two points is more than 20 pixels, we interpolate
         for i in range(len(path)):
-            distance_with_previous_point = self.__calculate_distance(path[i], path[i - 1]) if i > 0 else 0
+            distance_with_previous_point = (
+                self.__calculate_distance(path[i], path[i - 1]) if i > 0 else 0
+            )
             if distance_with_previous_point > 20:
                 current_num_points = int(distance_with_previous_point / 20)
-                current_interpolated_path = self.__interpolate_path(path[i - 1:i + 1], num_points=current_num_points)
-                interpolated_path = np.vstack([interpolated_path, current_interpolated_path]) if interpolated_path.size else current_interpolated_path
+                current_interpolated_path = self.__interpolate_path(
+                    path[i - 1 : i + 1], num_points=current_num_points
+                )
+                interpolated_path = (
+                    np.vstack([interpolated_path, current_interpolated_path])
+                    if interpolated_path.size
+                    else current_interpolated_path
+                )
             else:
-                interpolated_path = np.vstack([interpolated_path, path[i]]) if interpolated_path.size else path[i]
+                interpolated_path = (
+                    np.vstack([interpolated_path, path[i]])
+                    if interpolated_path.size
+                    else path[i]
+                )
 
         path = interpolated_path
         if not np.array_equal(path[-1], dest):

@@ -328,13 +328,11 @@ class Predictor:
                 else 0
             )
 
-            angle_speed_factor = (1 - angle / np.pi) * 0.5
+            angle_speed_factor = 1 - (angle / np.pi)
             progress_speed_factor = self.__calculate_speed_factor(progress)
-            print(progress, end=", ")
-            # print(angle, end = ", ")
-            print(progress_speed_factor)
-            speed_factor = angle_speed_factor * progress_speed_factor
-
+            speed_factor = (0.60 * angle_speed_factor) + (
+                0.4 * progress_speed_factor
+            )  # 60% weight to angle and 40% to progress
             path_with_speed[i] = np.array([path[i][0], path[i][1], speed_factor])
 
         return path_with_speed
@@ -392,4 +390,5 @@ class Predictor:
             path = np.vstack([start, path])
 
         path = self.__add_speed_factor(path)
+
         return path

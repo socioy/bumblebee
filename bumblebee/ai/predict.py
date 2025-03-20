@@ -32,7 +32,7 @@ class Predictor:
         and sets the model to evaluation mode.
         """
         # Constants for normalization
-        self.MAX_COORDINATE = 1920  # max resolution used in data collection was 1920x1080p so 1980 is used in training process,taken from training notebook: `rnn-train.ipynb`
+        self.MAX_COORDINATE = 4096 # allows to use 4k display,taken from training notebook: `rnn-train.ipynb`
         self.MIN_COORDINATE = 0
 
         # Constant for RNN model
@@ -117,21 +117,44 @@ class Predictor:
         angle = np.arccos(cos_angle)
         return angle
 
-    def __clean_path(self, path: np.ndarray, min_distance=10) -> np.ndarray:
+    def __clean_path(self, path: np.ndarray, min_distance=10.0, devaition_threshold = 100.0) -> np.ndarray:
         """
         Clean the predicted path by removing points that are too close to each other.
         Parameters:
             path (np.ndarray): The predicted path as an array of shape (STEPS, 2).
             min_distance (float): The minimum distance between consecutive points to keep them.
+            devaition_threshold (float): The threshold for deviation to consider a point as part of the path.
         Returns:
             np.ndarray: The cleaned path with points that are sufficiently spaced apart.
         """
-        cleaned_path = [path[0]]  # Start with the first point
-        for i in range(1, len(path)):
+        destination = path[-1]
+        start = path[0]
+
+        cleaned_path = [start]  # Start with the first point
+
+        for i in range(1, len(path)-1):
             if self.__calculate_distance(cleaned_path[-1], path[i]) >= min_distance:
                 cleaned_path.append(path[i])
+        cleaned_path.append(destination)  # Always add the last point
 
-        return np.array(cleaned_path)
+        undeviated_path = np.array([], dtype=np.float32)
+        cleaned_path = np.array(cleaned_path)
+        if len(cleaned_path) <= 2:
+            return cleaned_path
+        previous_point_distance = float('inf')
+        for i in range(len(cleaned_path)):
+            distance_to_dest =  self.__calculate_distance(cleaned_path[i], destination)
+            if distance_to_dest > previous_point_distance:
+                if distance_to_dest <= devaition_threshold:
+                    undeviated_path = np.append(undeviated_path, cleaned_path[i])    
+                    previous_point_distance = distance_to_dest
+            else:
+                undeviated_path = np.append(undeviated_path, cleaned_path[i])
+                previous_point_distance = distance_to_dest
+        
+        undeviated_path = undeviated_path.reshape(-1, 2)
+
+        return undeviated_path
 
     def __calculate_speed_factor(self, progress: float) -> float:
         """
@@ -181,7 +204,7 @@ class Predictor:
         smoothed_y = gaussian_filter1d(smoothed_y, sigma=0.5)
         return np.column_stack((smoothed_x, smoothed_y))
 
-    def __interploate_path(self, path: np.ndarray, num_points=50) -> np.ndarray:
+    def __interpolate_path(self, path: np.ndarray, num_points=50) -> np.ndarray:
         """
         Interpolate the predicted path to have a fixed number of intermediate points for smoother transitions.
         Parameters:
@@ -288,12 +311,11 @@ class Predictor:
 
         # Predict the intermediate path using the model
         path = self.__predict_path(input_arr)
+        path = np.vstack([start, path, dest])
         path = self.__clean_path(path)
 
-        path = self.__interploate_path(path)
         path = self.__smooth_path(path)
-        path = np.vstack([start, path, dest])
-        path = self.__interploate_path(path)
+        path = self.__interpolate_path(path)
         
         path = self.__add_speed_factor(path)
 

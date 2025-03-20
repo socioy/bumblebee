@@ -180,10 +180,10 @@ class Predictor:
             np.ndarray: The smoothed path with Gaussian noise applied to the coordinates.
         """
         smoothed_x = gaussian_filter1d(
-            path[:, 0], sigma=1
+            path[:, 0], sigma=0.8
         )  # apply gaussian filter to x coordinates
         smoothed_y = gaussian_filter1d(
-            path[:, 1], sigma=1
+            path[:, 1], sigma=0.8
         )  # apply gaussian filter to y coordinates
 
         noise_x = np.random.normal(

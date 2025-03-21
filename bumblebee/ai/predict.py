@@ -65,7 +65,7 @@ class Predictor:
             )
         self.model.eval()
 
-    def __normalize(self, data: int | float) -> float:
+    def __normalize(self, data: np.ndarray) -> np.ndarray:
         """
         Normalize coordinates to [0,1] range for model input
         """
@@ -73,7 +73,7 @@ class Predictor:
             self.MAX_COORDINATE - self.MIN_COORDINATE
         )
 
-    def __denormalize(self, data: int | float) -> float:
+    def __denormalize(self, data: np.ndarray) -> np.ndarray:
         """
         Denormalize coordinates from [0,1] range to original range
         """
@@ -88,7 +88,7 @@ class Predictor:
         Returns:
             float: The Euclidean distance between point1 and point2.
         """
-        return np.linalg.norm(point1 - point2)
+        return float(np.linalg.norm(point1 - point2))
 
     def __calculate_angle(
         self, point1: np.ndarray, point2: np.ndarray, point3: np.ndarray

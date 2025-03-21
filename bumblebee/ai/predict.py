@@ -362,14 +362,14 @@ class Predictor:
         interpolated_path = np.array([], dtype=np.float32)
 
         # Interpolate the path to ensure smooth transitions, make sure that there are no jumps, if distance between two points is more than 20 pixels, we interpolate
-        for i in range(len(path)):
-            distance_with_previous_point = (
-                self.__calculate_distance(path[i], path[i - 1]) if i > 0 else 0
+        for i in range(len(path) - 1):
+            distance_with_previous_point = int(
+                self.__calculate_distance(path[i], path[i + 1]) if i > 0 else 0
             )
             if distance_with_previous_point > 20:
                 current_num_points = int(distance_with_previous_point / 20)
                 current_interpolated_path = self.__interpolate_path(
-                    path[i - 1 : i + 1], num_points=current_num_points
+                    path[i : i + 2], num_points=current_num_points
                 )
                 interpolated_path = (
                     np.vstack([interpolated_path, current_interpolated_path])

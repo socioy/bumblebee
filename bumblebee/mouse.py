@@ -1,6 +1,5 @@
+import numpy as np
 import pyautogui
-import torch
-import torch.nn as nn
 
 from bumblebee.ai import Predictor
 
@@ -16,6 +15,8 @@ class Mouse:
 
     def move(self, destX, destY):
         currentX, currentY = pyautogui.position()
-        path_points = self.__predictor.predict([currentX, currentY], [destX, destY])
+        start = np.array([currentX, currentY], dtype=np.float32)
+        destination = np.array([destX, destY], dtype=np.float32)
+        path_points = self.__predictor.predict(start, destination)
         for point in path_points:
             pyautogui.moveTo(point[0], point[1], duration=0.1)

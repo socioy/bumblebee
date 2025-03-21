@@ -349,9 +349,9 @@ class Predictor:
             np.ndarray: The predicted path with speed factor as an array of shape (STEPS, 3).
         """
         # Combine start and destination coordinates into a single input array
-        input_arr = np.array(
-            [start + dest], dtype=np.float32
-        )  # Don't try to remove [] from here, it will break the code
+        input_arr = np.concatenate([start, dest]).reshape(
+            1, 4
+        )  # the input must be in [[x1,y1, x2, y2]] format, required by model
 
         # Predict the intermediate path using the model
         path = self.__predict_path(input_arr)

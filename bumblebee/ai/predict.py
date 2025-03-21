@@ -210,7 +210,7 @@ class Predictor:
 
         return speed_factor
 
-    def __smooth_path(self, path: np.ndarray, noise_factor=0.03) -> np.ndarray:
+    def __smooth_path(self, path: np.ndarray, noise_factor=4) -> np.ndarray:
         """
         Smooth the predicted path by applying Gaussian noise to the coordinates.
         Parameters:
@@ -220,10 +220,10 @@ class Predictor:
             np.ndarray: The smoothed path with Gaussian noise applied to the coordinates.
         """
         smoothed_x = gaussian_filter1d(
-            path[:, 0], sigma=0.8
+            path[:, 0], sigma=0.4
         )  # apply gaussian filter to x coordinates
         smoothed_y = gaussian_filter1d(
-            path[:, 1], sigma=0.8
+            path[:, 1], sigma=0.4
         )  # apply gaussian filter to y coordinates
 
         noise_x = np.random.normal(

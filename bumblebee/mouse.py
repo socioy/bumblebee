@@ -19,4 +19,5 @@ class Mouse:
         destination = np.array([destX, destY], dtype=np.float32)
         path_points = self.__predictor.predict(start, destination)
         for point in path_points:
-            pyautogui.moveTo(point[0], point[1], duration=0.1)
+            X, Y, speed_factor = point
+            pyautogui.moveTo(X, Y, duration=0.1)

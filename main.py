@@ -1,11 +1,14 @@
-from bumblebee import Mouse
-import pyautogui
 import time
+
+import pyautogui
+
+from bumblebee import Mouse
 
 x, y = pyautogui.size()
 import random
+
 m = Mouse()
-pyautogui.move(random.randint(0, x), random.randint(0, y))
+# pyautogui.move(random.randint(0, x), random.randint(0, y))
 for i in range(100):
     m.move(random.randint(0, x), random.randint(0, y))
     time.sleep(2)

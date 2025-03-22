@@ -1,9 +1,9 @@
 import random
 import numpy as np
 import pyautogui
-
+import time
 from bumblebee.ai import Predictor
-
+from typing import Any
 
 class Mouse:
     def __init__(self):
@@ -96,6 +96,40 @@ class Mouse:
             )
 
         return data_required_for_move.reshape(-1, 4)
+
+    def __hold(self, button:Any):
+        """
+        Simulates holding down a mouse button.
+
+        Args:
+            button (str): The mouse button to hold. Options: 'left', 'middle', 'right', 'primary', 'secondary'
+        """
+        assert button in ['left', 'middle', 'right', 'primary', 'secondary'], "Invalid button:{}".format(button)
+        time.sleep(random.uniform(0.05, 0.1))
+        pyautogui.mouseDown(button=button)
+
+    def __release(self, button:Any):
+        """
+        Simulates releasing a mouse button.
+
+        Args:
+            button (str): The mouse button to release. Options: 'left', 'middle', 'right', 'primary', 'secondary'
+        """
+        assert button in ['left', 'middle', 'right', 'primary', 'secondary'], "Invalid button:{}".format(button)
+        time.sleep(random.uniform(0.05, 0.1))
+        pyautogui.mouseUp(button=button)
+
+    def click(self, button: Any = 'left'):
+        """
+        Simulates a mouse click at the current position.
+
+        Args:
+            button (str): The mouse button to click. Defaults to 'left'. Options: 'left', 'middle', 'right', 'primary', 'secondary'
+        """
+        assert button in ['left', 'middle', 'right', 'primary', 'secondary'], "Invalid button:{}".format(button)
+        time.sleep(random.uniform(0.05, 0.1))
+        pyautogui.click(button=button)
+
 
     def move(self, destX, destY):
         currentX, currentY = pyautogui.position()

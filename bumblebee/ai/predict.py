@@ -79,7 +79,7 @@ class Predictor:
         """
         return data * (self.MAX_COORDINATE - self.MIN_COORDINATE) + self.MIN_COORDINATE
 
-    def __calculate_distance(self, point1: np.ndarray, point2: np.ndarray) -> float:
+    def _calculate_distance(self, point1: np.ndarray, point2: np.ndarray) -> float:
         """
         Calculate the Euclidean distance between two points in 2D space.
         Parameters:
@@ -136,7 +136,7 @@ class Predictor:
         cleaned_path = [start]  # Start with the first point
 
         for i in range(1, len(path) - 1):
-            if self.__calculate_distance(cleaned_path[-1], path[i]) >= min_distance:
+            if self._calculate_distance(cleaned_path[-1], path[i]) >= min_distance:
                 cleaned_path.append(path[i])
         cleaned_path.append(destination)  # Always add the last point
 
@@ -146,7 +146,7 @@ class Predictor:
             return cleaned_path
         previous_point_distance = float("inf")
         for i in range(len(cleaned_path)):
-            distance_to_dest = self.__calculate_distance(cleaned_path[i], destination)
+            distance_to_dest = self._calculate_distance(cleaned_path[i], destination)
             if distance_to_dest > previous_point_distance:
                 if distance_to_dest <= deviation_threshold:
                     undeviated_path = np.append(undeviated_path, cleaned_path[i])
@@ -364,7 +364,7 @@ class Predictor:
         # Interpolate the path to ensure smooth transitions, make sure that there are no jumps, if distance between two points is more than 20 pixels, we interpolate
         for i in range(len(path) - 1):
             distance_with_previous_point = int(
-                self.__calculate_distance(path[i], path[i + 1]) if i > 0 else 0
+                self._calculate_distance(path[i], path[i + 1]) if i > 0 else 0
             )
             if distance_with_previous_point >= 40:
                 current_num_points = int(distance_with_previous_point / 20)

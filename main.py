@@ -11,7 +11,6 @@ m = Mouse()
 # pyautogui.move(random.randint(0, x), random.randint(0, y))
 for i in range(100):
     m.move(random.randint(0, x), random.randint(0, y))
-    m.click("middle")
     time.sleep(2)
 
 # p = Predictor()

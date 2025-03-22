@@ -15,7 +15,7 @@ class Mouse:
         Base mouse movement speed in pixels/second. Has greater impact over longer distances.
         For shorter movements, speed differences are less noticeable but still maintained.
         """
-        self.SPEED = 2000
+        self.SPEED = 1000
 
     def __setup_pyautogui(self):
         pyautogui.MINIMUM_DURATION = 0

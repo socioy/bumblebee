@@ -119,7 +119,7 @@ class Predictor:
         return angle
 
     def __clean_path(
-        self, path: np.ndarray, min_distance=10.0, devaition_threshold=50.0
+        self, path: np.ndarray, min_distance=10.0, deviation_threshold=50.0
     ) -> np.ndarray:
         """
         Clean the predicted path by removing points that are too close to each other.
@@ -148,7 +148,7 @@ class Predictor:
         for i in range(len(cleaned_path)):
             distance_to_dest = self.__calculate_distance(cleaned_path[i], destination)
             if distance_to_dest > previous_point_distance:
-                if distance_to_dest <= devaition_threshold:
+                if distance_to_dest <= deviation_threshold:
                     undeviated_path = np.append(undeviated_path, cleaned_path[i])
                     previous_point_distance = distance_to_dest
             else:
@@ -220,10 +220,10 @@ class Predictor:
             np.ndarray: The smoothed path with Gaussian noise applied to the coordinates.
         """
         smoothed_x = gaussian_filter1d(
-            path[:, 0], sigma=0.4
+            path[:, 0], sigma=0.3
         )  # apply gaussian filter to x coordinates
         smoothed_y = gaussian_filter1d(
-            path[:, 1], sigma=0.4
+            path[:, 1], sigma=0.3
         )  # apply gaussian filter to y coordinates
 
         noise_x = np.random.normal(

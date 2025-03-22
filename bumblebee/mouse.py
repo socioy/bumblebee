@@ -1,24 +1,26 @@
 import random
-from calendar import Day
-from re import A
-
 import numpy as np
 import pyautogui
-from numpy._core.umath import mod
 
 from bumblebee.ai import Predictor
 
 
 class Mouse:
     def __init__(self):
-        self.__predictor = Predictor()
-        self.__setup_pyautogui()
-        self.SPEED = 3000  # Speed in pixels per second
+        self.__predictor = (
+            Predictor()
+        )  # predictor instance for AI prediction of mouse path
+        self.__setup_pyautogui()  # setup pyautogui for mouse movement
+        """
+        Base mouse movement speed in pixels/second. Has greater impact over longer distances.
+        For shorter movements, speed differences are less noticeable but still maintained.
+        """
+        self.SPEED = 2000
 
     def __setup_pyautogui(self):
-        pyautogui.MINIMUM_DURATION = 0  #
+        pyautogui.MINIMUM_DURATION = 0
         pyautogui.PAUSE = 0.001  # setting the pause time of pyautogui in each move to 1ms; default is 100ms
-        pyautogui.FAILSAFE = False
+        pyautogui.FAILSAFE = False  # required to allow mouse to move to corners
 
     def __prepare_data_for_move(self, path_points: np.ndarray) -> np.ndarray:
         """
@@ -48,9 +50,13 @@ class Mouse:
         x, y, speed_factor = path_points[:, 0], path_points[:, 1], path_points[:, 2]
         total_points = len(x)
 
-        adjacent_distances = np.sqrt(np.diff(x) ** 2 + np.diff(y) ** 2) # Calculate the distance between adjacent points, arr[next_index] - array[current_index
-        adjacent_distances = np.insert(adjacent_distances, 0, 0) # Insert a zero at the beginning of the array, to handle the first point; first point has no previous point
-        distance_to_last_position = 0 # keep track of the distance to the last position if the distance is less than 5px
+        adjacent_distances = np.sqrt(
+            np.diff(x) ** 2 + np.diff(y) ** 2
+        )  # Calculate the distance between adjacent points, arr[next_index] - array[current_index
+        adjacent_distances = np.insert(
+            adjacent_distances, 0, 0
+        )  # Insert a zero at the beginning of the array, to handle the first point; first point has no previous point
+        distance_to_last_position = 0  # keep track of the distance to the last position if the distance is less than 5px
         data_required_for_move = np.array([])
 
         for i in range(1, total_points):

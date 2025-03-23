@@ -25,6 +25,18 @@ class Mouse:
         pyautogui.PAUSE = 0.001  # setting the pause time of pyautogui in each move to 1ms; default is 100ms
         pyautogui.FAILSAFE = False  # required to allow mouse to move to corners
 
+    def __assert_valid_button(self, button: str):
+        assert isinstance(button, str), "Invalid button type:{}".format(type(button))
+        assert button in [
+            "left",
+            "middle",
+            "right",
+            "primary",
+            "secondary",
+        ], "Invalid button:{}. Button must be one of 'left', 'middle', 'right', 'primary', 'secondary'.".format(
+            button
+        )
+
     def __prepare_data_for_move(self, path_points: np.ndarray) -> np.ndarray:
         """
         Processes path points data to generate mouse movement commands.
@@ -100,17 +112,19 @@ class Mouse:
 
         return data_required_for_move.reshape(-1, 4)
 
-    def __assert_valid_button(self, button: str):
-        assert isinstance(button, str), "Invalid button type:{}".format(type(button))
-        assert button in [
-            "left",
-            "middle",
-            "right",
-            "primary",
-            "secondary",
-        ], "Invalid button:{}. Button must be one of 'left', 'middle', 'right', 'primary', 'secondary'.".format(
-            button
-        )
+    def set_speed(self, speed: float):
+        """
+        Set the speed of the mouse cursor.
+        Args:
+            speed (float): The speed of the mouse cursor. The speed is measured in pixels per second.
+
+        Raises:
+            AssertionError: If the speed is not greater than 0.
+            AssertionError: If the speed is not a float.
+        """
+        assert speed > 0, "Speed must be greater than 0"
+        assert isinstance(speed, float), "Speed must be a float"
+        self.__SPEED = speed
 
     def hold(self, button: Any):
         """
@@ -133,33 +147,6 @@ class Mouse:
         self.__assert_valid_button(button)
         time.sleep(random.uniform(0.05, 0.1))
         pyautogui.mouseUp(button=button)
-
-    def drag_to(self, destX, destY, button: str = "left"):
-        """
-        Simulates dragging the mouse to a destination.
-
-        Unlike move() method, this method does not simulate human behavior.
-        It utilizes native PyAutoGUI functionality, but with a custom speed prediction.
-
-        Args:
-            destX (int): The x-coordinate of the destination.
-            destY (int): The y-coordinate of the destination.
-            button (str): The mouse button to drag with. Defaults to 'left'. Options: 'left', 'middle', 'right', 'primary', 'secondary'.
-
-        Raises:
-            AssertionError: If the button is not valid.
-        """
-
-        self.__assert_valid_button(button)
-        current_coordinates = np.array(pyautogui.position())
-        dest_coordinates = np.array([destX, destY])
-        distance = self.__predictor._calculate_distance(
-            current_coordinates, dest_coordinates
-        )  # calculate distance between current and destination coordinates
-        time.sleep(random.uniform(0.05, 0.1))
-        pyautogui.dragTo(
-            destX, destY, duration=(distance / self.__SPEED), button=button
-        )
 
     def hover(self, radius: int, duration: float):
         currentX, currentY = pyautogui.position()
@@ -215,9 +202,37 @@ class Mouse:
             pyautogui.moveTo(X, Y, duration=move_duration)
             time.sleep(sleep_duration)
 
+    def drag_to(self, destX, destY, button: str = "left"):
+        """
+        Simulates dragging the mouse to a destination.
+
+        Unlike move() method, this method does not simulate human behavior.
+        It utilizes native PyAutoGUI functionality, but with a custom speed prediction.
+
+        Args:
+            destX (int): The x-coordinate of the destination.
+            destY (int): The y-coordinate of the destination.
+            button (str): The mouse button to drag with. Defaults to 'left'. Options: 'left', 'middle', 'right', 'primary', 'secondary'.
+
+        Raises:
+            AssertionError: If the button is not valid.
+        """
+
+        self.__assert_valid_button(button)
+        current_coordinates = np.array(pyautogui.position())
+        dest_coordinates = np.array([destX, destY])
+        distance = self.__predictor._calculate_distance(
+            current_coordinates, dest_coordinates
+        )  # calculate distance between current and destination coordinates
+        time.sleep(random.uniform(0.05, 0.1))
+        pyautogui.dragTo(
+            destX, destY, duration=(distance / self.__SPEED), button=button
+        )
+
     def move_to_and_click(self, destX, destY, button: Any = "left"):
         """
         Move the mouse cursor to the specified coordinates and click.
+
         Args:
             destX (int): The x-coordinate of the destination.
             destY (int): The y-coordinate of the destination.
@@ -229,17 +244,3 @@ class Mouse:
         self.move(destX, destY)
         time.sleep(random.uniform(0.5, 2))
         self.click(button)
-
-    def set_speed(self, speed: float):
-        """
-        Set the speed of the mouse cursor.
-        Args:
-            speed (float): The speed of the mouse cursor. The speed is measured in pixels per second.
-
-        Raises:
-            AssertionError: If the speed is not greater than 0.
-            AssertionError: If the speed is not a float.
-        """
-        assert speed > 0, "Speed must be greater than 0"
-        assert isinstance(speed, float), "Speed must be a float"
-        self.__SPEED = speed

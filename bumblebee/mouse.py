@@ -126,29 +126,15 @@ class Mouse:
         assert isinstance(speed, float), "Speed must be a float"
         self.__SPEED = speed
 
-    def hold(self, button: Any):
-        """
-        Simulates holding down a mouse button.
-
-        Args:
-            button (str): The mouse button to hold. Options: 'left', 'middle', 'right', 'primary', 'secondary'
-        """
-        self.__assert_valid_button(button)
-        time.sleep(random.uniform(0.05, 0.1))
-        pyautogui.mouseDown(button=button)
-
-    def release(self, button: Any):
-        """
-        Simulates releasing a mouse button.
-
-        Args:
-            button (str): The mouse button to release. Options: 'left', 'middle', 'right', 'primary', 'secondary'
-        """
-        self.__assert_valid_button(button)
-        time.sleep(random.uniform(0.05, 0.1))
-        pyautogui.mouseUp(button=button)
-
     def hover(self, radius: int, duration: float):
+        """
+        Simulates hovering the mouse cursor at the current position.
+
+        Args:
+            radius (int): The radius of the hover area.
+            duration (float): The duration of the hover in seconds.
+        """
+        # todo: implement hover
         currentX, currentY = pyautogui.position()
         start_time = time.time()
         while True:

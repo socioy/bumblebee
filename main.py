@@ -12,7 +12,5 @@ m = Mouse()
 for i in range(100):
     m.move(800, 300)
     time.sleep(2)
-    m.drag_to(800, 500)
-    time.sleep(4)
 # p = Predictor()
 # path = p.predict([100, 700], [700, 60])

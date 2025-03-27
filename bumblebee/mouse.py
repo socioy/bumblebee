@@ -184,6 +184,8 @@ class Mouse:
 
         start = np.array([currentX, currentY], dtype=np.float32)
         destination = np.array([destX, destY], dtype=np.float32)
+        if np.array_equal(start, destination):
+            return
 
         path_points = self.__predictor.predict(start, destination)
 
@@ -224,10 +226,15 @@ class Mouse:
         distance = self.__predictor._calculate_distance(
             current_coordinates, dest_coordinates
         )  # calculate distance between current and destination coordinates
+
         time.sleep(random.uniform(0.05, 0.1))
-        pyautogui.dragTo(
-            destX, destY, duration=(distance / self.__SPEED), button=button
-        )
+        duration = (
+            distance / self.__SPEED
+            if not np.array_equal(current_coordinates, dest_coordinates)
+            else random.uniform(0.5, 1)
+        )  # make duration longer if we are returning to the same position
+
+        pyautogui.dragTo(destX, destY, duration=duration, button=button)
 
     def move_to_and_click(self, destX, destY, button: Any = "left"):
         """

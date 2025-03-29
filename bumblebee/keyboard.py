@@ -350,7 +350,7 @@ class Keyboard:
         assert isinstance(new_speed, int) or isinstance(
             new_speed, float
         ), "new_speed must be an integer or float"
-        assert 0 <= new_speed <= 100, "new_speed must be between 0 and 100"
+        assert 0 <= new_speed, "new_speed must be between 0 and 100"
 
         self.__typing_speed = new_speed / 100
 

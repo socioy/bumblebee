@@ -112,7 +112,7 @@ class Mouse:
 
         return data_required_for_move.reshape(-1, 4)
 
-    def set_speed(self, speed: float):
+    def set_speed(self, speed: float | int):
         """
         Set the speed of the mouse cursor.
         Args:
@@ -123,7 +123,7 @@ class Mouse:
             AssertionError: If the speed is not a float.
         """
         assert speed > 0, "Speed must be greater than 0"
-        assert isinstance(speed, float), "Speed must be a float"
+        assert isinstance(speed, float) or isinstance(speed, int), "Speed must be either float or int"
         self.__SPEED = speed
 
     def click(self, button: Any = "left"):

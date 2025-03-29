@@ -2,7 +2,7 @@
 
 <picture>
   <source srcset="https://github.com/socioy/bumblebee/blob/master/data/logo.png" type="image/png">
-  <img src="https://github.com/socioy/bumblebee/blob/master/data/logo.png" alt="Bumblebee Logo" style="max-width: 400px; display: block; margin-left: auto; margin-right: auto;">
+  <img src="https://github.com/socioy/bumblebee/blob/master/data/logo.png" alt="Bumblebee Logo" width="400" style="display: block; margin-left: auto; margin-right: auto;">
 </picture>
 
 Bumblebee is an AI-powered Python package that provides **realistic, human-like control** of the mouse and keyboard. Unlike traditional automation tools, Bumblebee leverages deep learning to predict **natural movement patterns**, resulting in automated interactions that feel organic and smooth.

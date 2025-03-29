@@ -70,7 +70,39 @@ We're committed to providing a welcoming environment for all contributors. Pleas
    isort . # sort imports
    ```
 
-4. **Test your changes**: Ensure your code works as expected by testing the functionality you modified
+4. **Test Your Changes**
+
+Before committing your changes, ensure your modifications work correctly. This step is critical for maintaining build integrity and overall functionality.
+
+You can validate your work with the following steps:
+
+1. Build the package:
+   ```bash
+   python setup.py sdist bdist_wheel
+   ```
+
+2. (Optional) Create a fresh virtual environment:
+   - On macOS/Linux:
+     ```bash
+     python3 -m venv test-env
+     source test-env/bin/activate
+     ```
+   - On Windows:
+     ```bash
+     python -m venv test-env
+     .\test-env\Scripts\activate
+     ```
+
+3. Install the newly built package:
+   ```bash
+   pip install dist/bumblebee-1.0.0-py3-none-any.whl
+   ```
+
+Alternatively, use your preferred testing method to ensure everything functions as expected.
+
+   
+After building, run your tests to confirm that everything functions as expected.
+
 
 5. **Commit your changes**: Use clear, descriptive commit messages:
    ```bash

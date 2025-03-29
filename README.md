@@ -1,54 +1,128 @@
-# 🐝 Bumblebee – Human-Like Mouse & Keyboard Controller  
-**Under Development** 🚧  
+# 🐝 Bumblebee – Human-Like Mouse & Keyboard Controller
 
-Bumblebee is an AI-powered Python package that enables **realistic, human-like control** of the mouse and keyboard. Unlike traditional automation tools, Bumblebee predicts **natural movement patterns** using deep learning, making automated interactions feel organic and smooth.  
+<picture>
+    <source srcset="https://github.com/socioy/bumblebee/blob/master/data/logo.png" type="image/png">
+    <img src="https://github.com/socioy/bumblebee/blob/master/data/logo.png" alt="Bumblebee Logo">
+</picture>
 
-## ✨ Features  
-✅ **AI-Powered Cursor Movement** – Uses an RNN with LSTM to generate smooth, human-like paths.  
-✅ **Smart Keystroke Simulation** – Factors in key distances, punctuation, and natural typing behavior.  
-✅ **25K+ Self-Collected Dataset** – Trained on real human movement data.  
-✅ **Upcoming: Reinforcement Learning (RL) Enhancements** – Will further refine movement realism.  
-✅ **Uses PyAutoGUI** – Leverages PyAutoGUI for actual mouse and keyboard input simulation.  
-✅ **Built with PyTorch** – AI models are developed using PyTorch for deep learning.  
+Bumblebee is an AI-powered Python package that provides **realistic, human-like control** of the mouse and keyboard. Unlike traditional automation tools, Bumblebee leverages deep learning to predict **natural movement patterns**, resulting in automated interactions that feel organic and smooth.
 
 ---
 
-## 🚀 How It Works  
+## ✨ Features
 
-### 🖱️ Cursor Movement  
-The **cursor path** is determined by a **Recurrent Neural Network (RNN) with an LSTM layer** on top. It was trained on **30,000 real cursor movements** (self-collected due to the lack of existing datasets). This allows Bumblebee to generate **smooth, human-like paths** instead of robotic jumps.  
-
-🔜 **Coming Soon:**  
-To further enhance realism, an **RNN-LSTM + Reinforcement Learning (RL) model** will be integrated, allowing the cursor to learn and adapt to different movement styles dynamically.  
-
-### ⌨️ Keyboard Control  
-The keyboard controller is based on a **set of mathematical rules** and factors such as:  
-- Distance between keys  
-- Typing speed variations  
-- Punctuation handling  
-- Natural key press delays  
-
-These elements make typing behavior appear **more organic and less predictable**, replicating human keystroke patterns.  
-
-### 🏗️ Under the Hood  
-- **Mouse & Keyboard Simulation:** Bumblebee uses **PyAutoGUI** to simulate real input events.  
-- **AI Model:** Built using **PyTorch**, leveraging deep learning for movement prediction.  
+- **AI-Powered Cursor Movement:**  
+  Employs an RNN augmented with an LSTM layer to create smooth, human-like mouse trajectories. These paths are further refined by introducing natural noise and variable speeds, resulting in movements that mimic real human behavior seamlessly.
+- **Smart Keystroke Simulation:**  
+  Emulates typing with natural delays, punctuation handling, and variability in keystroke timing.
+- **Extensive Training Data:**  
+  Trained on a dataset of over 25,000 real cursor movements for enhanced realism.
+- **Reinforcement Learning (Coming Soon):**  
+  Future updates will integrate RL to further refine cursor behavior.
+- **PyAutoGUI Integration:**  
+  Utilizes [PyAutoGUI](https://pyautogui.readthedocs.io/) and [pynput](https://pynput.readthedocs.io/) for simulating robust mouse and keyboard interactions.
+- **Built with PyTorch:**  
+  All AI models are developed using PyTorch.
 
 ---
 
-## 📌 Installation (Coming Soon)  
-Currently under development. Stay tuned for installation instructions!  
+## 🚀 How It Works
+
+### 🖱️ Cursor Movement
+
+Bumblebee predicts the cursor path using an RNN-LSTM model trained on extensive real-world cursor data. This approach avoids the robotic jumps seen in conventional automation tools, ensuring smooth and natural motion.
+
+Currently, Bumblebee's mouse moves on almost the same path if the same initial and destination positions are provided, with some noise.
+
+> **Coming Soon:**  An enhanced model incorporating Reinforcement Learning (RL) that will generate different form of paths even if same initial and destination is provided.
+
+### ⌨️ Keyboard Control
+
+The keyboard simulation is driven by:
+- **Mathematical Models:**  
+  Considering distances between keys and natural typing rhythms.
+- **Timing Variations:**  
+  Simulated delays for each keystroke to mimic human typing quirks.
+- **Punctuation & Special Characters Handling:**  
+  Adjusted behaviors to reflect realistic typing patterns.
+
+### 🏗️ Under the Hood
+
+- **Simulation:**  
+  Uses [PyAutoGUI](https://pyautogui.readthedocs.io/) for executing mouse events and [pynput] (https://pynput.readthedocs.io/) for executing keyboard events.
+- **Deep Learning:**  
+  Powered by PyTorch models trained on self-collected datasets of human interactions for predicting intermediate points between starting position and destination.
 
 ---
 
-## 🛠️ Planned Enhancements  
-✔️ Implement RL to refine cursor path movement  
-✔️ Add API for custom movement settings  
-✔️ Optimize typing delays for different input styles  
+## ⚙️ How to Use
+
+1. Install Bumblebee
+
+```bash
+pip install bumblebee
+```
+2. Import the core modules and use them as following:
+
+#### Mouse Control Examples
+
+```python
+from bumblebee import Mouse
+
+# Initialize controllers
+mouse = Mouse()
+
+
+# Set mouse speed (pixels per second)
+mouse.set_speed(1000)
+
+# Move mouse to specific coordinates
+mouse.move(100, 200)
+
+# Drag mouse from the current position to a new location
+mouse.drag_to(233, 244)
+
+# Simulate a mouse click (button options: "left", "middle", "right", "primary", "secondary")
+mouse.click(button="left")
+
+# Move to a position then click
+mouse.move_to_and_click(destX=150, destY=250, button="left")
+```
+
+#### Keyboard Control Example
+
+Initialize the Keyboard controller and adjust its typing behavior:
+
+```python
+from bumblebee import Keyboard
+
+# Initialize the Keyboard controller with default parameters:
+#   - typing_speed: 100 (default percentage of ideal speed)
+#   - consistency: 95 (default consistency percentage, affecting delay variability)
+#   - typo_rate: 5 (default typo frequency percentage)
+keyboard = Keyboard()
+
+# Adjust typing speed.
+# The typing speed is provided as a percentage relative to the original Bumblebee typing speed.
+# Acceptable types: int or float.
+keyboard.set_speed(new_speed=400)  # Increase the typing speed to 400%
+
+# Adjust typo rate.
+# The new typo rate must be a value between 0 and 100 (int or float).
+keyboard.set_typo_rate(3)  # Set typo rate to 3%
+
+# Adjust consistency.
+# A higher consistency (0-100) increases typing speed with less delay variability.
+keyboard.set_consistency(99)  # Set consistency to 99%
+
+# Type a sample text.
+text = "Bumblebee is great."
+keyboard.type(text)  # 'text' must be a string.
+```
 
 ---
 
-## 📢 Stay Updated  
-Bumblebee is a work in progress. Contributions, ideas, and feedback are welcome! 🚀  
+### Interested in contributing? 
+Please take a moment to review our [CONTRIBUTING.md](https://github.com/socioy/bumblebee/blob/master/CONTRIBUTING.md) file for detailed guidelines on how to join our community and help shape Bumblebee’s future.
 
-🐝 **Making automation feel more human, one movement at a time.**  
+🐝 **Making automation feel more human, one movement at a time.**

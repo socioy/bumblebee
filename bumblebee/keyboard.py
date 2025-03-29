@@ -10,7 +10,7 @@ class Keyboard:
         self,
         typing_speed: int | float = 100,
         consistency: int | float = 95,
-        typo_rate: int | float = 3,
+        typo_rate: int | float = 5,
     ):
         """
         Initialize the Keyboard class with typing speed and consistency.

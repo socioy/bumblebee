@@ -33,5 +33,5 @@ setup(
         "Operating System :: OS Independent",
         "License :: OSI Approved :: MIT License",
     ],
-    python_requires=">=3.6, <4",  # Adjust for more Python versions if necessary
+    python_requires=">=3.11",  # Adjust for more Python versions if necessary
 )

@@ -77,8 +77,8 @@ from bumblebee import Mouse
 mouse = Mouse()
 
 
-# Set mouse speed (pixels per second) in float
-mouse.set_speed(1000.0) # default to 2000
+# Set mouse speed (pixels per second)
+mouse.set_speed(1000)
 
 # Move mouse to specific coordinates
 mouse.move(100, 200)

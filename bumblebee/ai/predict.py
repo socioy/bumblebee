@@ -65,7 +65,7 @@ class Predictor:
             )
         self.model.eval()
 
-    def __normalize(self, data: int | float) -> float:
+    def __normalize(self, data: np.ndarray) -> np.ndarray:
         """
         Normalize coordinates to [0,1] range for model input
         """
@@ -73,13 +73,13 @@ class Predictor:
             self.MAX_COORDINATE - self.MIN_COORDINATE
         )
 
-    def __denormalize(self, data: int | float) -> float:
+    def __denormalize(self, data: np.ndarray) -> np.ndarray:
         """
         Denormalize coordinates from [0,1] range to original range
         """
         return data * (self.MAX_COORDINATE - self.MIN_COORDINATE) + self.MIN_COORDINATE
 
-    def __calculate_distance(self, point1: np.ndarray, point2: np.ndarray) -> float:
+    def _calculate_distance(self, point1: np.ndarray, point2: np.ndarray) -> float:
         """
         Calculate the Euclidean distance between two points in 2D space.
         Parameters:
@@ -88,7 +88,7 @@ class Predictor:
         Returns:
             float: The Euclidean distance between point1 and point2.
         """
-        return np.linalg.norm(point1 - point2)
+        return float(np.linalg.norm(point1 - point2))
 
     def __calculate_angle(
         self, point1: np.ndarray, point2: np.ndarray, point3: np.ndarray
@@ -119,7 +119,7 @@ class Predictor:
         return angle
 
     def __clean_path(
-        self, path: np.ndarray, min_distance=10.0, devaition_threshold=50.0
+        self, path: np.ndarray, min_distance=10.0, deviation_threshold=50.0
     ) -> np.ndarray:
         """
         Clean the predicted path by removing points that are too close to each other.
@@ -136,7 +136,7 @@ class Predictor:
         cleaned_path = [start]  # Start with the first point
 
         for i in range(1, len(path) - 1):
-            if self.__calculate_distance(cleaned_path[-1], path[i]) >= min_distance:
+            if self._calculate_distance(cleaned_path[-1], path[i]) >= min_distance:
                 cleaned_path.append(path[i])
         cleaned_path.append(destination)  # Always add the last point
 
@@ -146,9 +146,9 @@ class Predictor:
             return cleaned_path
         previous_point_distance = float("inf")
         for i in range(len(cleaned_path)):
-            distance_to_dest = self.__calculate_distance(cleaned_path[i], destination)
+            distance_to_dest = self._calculate_distance(cleaned_path[i], destination)
             if distance_to_dest > previous_point_distance:
-                if distance_to_dest <= devaition_threshold:
+                if distance_to_dest <= deviation_threshold:
                     undeviated_path = np.append(undeviated_path, cleaned_path[i])
                     previous_point_distance = distance_to_dest
             else:
@@ -210,7 +210,7 @@ class Predictor:
 
         return speed_factor
 
-    def __smooth_path(self, path: np.ndarray, noise_factor=0.03) -> np.ndarray:
+    def __smooth_path(self, path: np.ndarray, noise_factor=1.5) -> np.ndarray:
         """
         Smooth the predicted path by applying Gaussian noise to the coordinates.
         Parameters:
@@ -220,10 +220,10 @@ class Predictor:
             np.ndarray: The smoothed path with Gaussian noise applied to the coordinates.
         """
         smoothed_x = gaussian_filter1d(
-            path[:, 0], sigma=0.8
+            path[:, 0], sigma=0.5
         )  # apply gaussian filter to x coordinates
         smoothed_y = gaussian_filter1d(
-            path[:, 1], sigma=0.8
+            path[:, 1], sigma=0.5
         )  # apply gaussian filter to y coordinates
 
         noise_x = np.random.normal(
@@ -349,9 +349,9 @@ class Predictor:
             np.ndarray: The predicted path with speed factor as an array of shape (STEPS, 3).
         """
         # Combine start and destination coordinates into a single input array
-        input_arr = np.array(
-            [start + dest], dtype=np.float32
-        )  # Don't try to remove [] from here, it will break the code
+        input_arr = np.concatenate([start, dest]).reshape(
+            1, 4
+        )  # the input must be in [[x1,y1, x2, y2]] format, required by model
 
         # Predict the intermediate path using the model
         path = self.__predict_path(input_arr)
@@ -362,14 +362,14 @@ class Predictor:
         interpolated_path = np.array([], dtype=np.float32)
 
         # Interpolate the path to ensure smooth transitions, make sure that there are no jumps, if distance between two points is more than 20 pixels, we interpolate
-        for i in range(len(path)):
-            distance_with_previous_point = (
-                self.__calculate_distance(path[i], path[i - 1]) if i > 0 else 0
+        for i in range(len(path) - 1):
+            distance_with_previous_point = int(
+                self._calculate_distance(path[i], path[i + 1]) if i > 0 else 0
             )
-            if distance_with_previous_point > 20:
+            if distance_with_previous_point >= 40:
                 current_num_points = int(distance_with_previous_point / 20)
                 current_interpolated_path = self.__interpolate_path(
-                    path[i - 1 : i + 1], num_points=current_num_points
+                    path[i : i + 2], num_points=current_num_points
                 )
                 interpolated_path = (
                     np.vstack([interpolated_path, current_interpolated_path])

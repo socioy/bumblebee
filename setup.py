@@ -11,7 +11,7 @@ except FileNotFoundError:
     long_description = "An AI-powered Python package for natural, human-like mouse and keyboard control."
 
 setup(
-    name="bumblebee",
+    name="the-bumblebee",
     version="1.0.0",
     description="An AI-powered Python package for natural, human-like mouse and keyboard control.",
     long_description=long_description,

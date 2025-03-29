@@ -11,17 +11,22 @@ Bumblebee is an AI-powered Python package that provides **realistic, human-like 
 ## ✨ Features
 
 - **AI-Powered Cursor Movement:**  
-  Employs an RNN augmented with an LSTM layer to create smooth, human-like mouse trajectories. These paths are further refined by introducing natural noise and variable speeds, resulting in movements that mimic real human behavior seamlessly.
+  Utilizes an RNN augmented with an LSTM layer to generate smooth, human-like mouse trajectories. These paths are enhanced with natural noise and variable speeds, creating movements that closely mimic real human behavior.
+
 - **Smart Keystroke Simulation:**  
-  Emulates typing with natural delays, punctuation handling, and variability in keystroke timing.
+  Simulates typing with natural delays, realistic punctuation handling, and variability in keystroke timing to emulate human typing patterns.
+
 - **Extensive Training Data:**  
-  Trained on a dataset of over 25,000 real cursor movements for enhanced realism.
+  Trained on a dataset of over 25,000 real cursor movements to ensure high realism and accuracy.
+
 - **Reinforcement Learning (Coming Soon):**  
-  Future updates will integrate RL to further refine cursor behavior.
-- **PyAutoGUI Integration:**  
-  Utilizes [PyAutoGUI](https://pyautogui.readthedocs.io/) and [pynput](https://pynput.readthedocs.io/) for simulating robust mouse and keyboard interactions.
+  Future updates will incorporate RL to further enhance cursor behavior, enabling more diverse and adaptive movement patterns.
+
+- **PyAutoGUI & pynput Integration:**  
+  Leverages [PyAutoGUI](https://pyautogui.readthedocs.io/) and [pynput](https://pynput.readthedocs.io/) for reliable mouse and keyboard event simulation.
+
 - **Built with PyTorch:**  
-  All AI models are developed using PyTorch.
+  All AI models are developed using PyTorch, ensuring robust and scalable performance.
 
 ---
 

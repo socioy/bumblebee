@@ -1,5 +1,6 @@
 import os
-from setuptools import setup, find_packages
+
+from setuptools import find_packages, setup
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -10,7 +11,7 @@ except FileNotFoundError:
     long_description = "An AI-powered Python package for natural, human-like mouse and keyboard control."
 
 setup(
-    name="bumblebee",
+    name="the-bumblebee",
     version="1.0.0",
     description="An AI-powered Python package for natural, human-like mouse and keyboard control.",
     long_description=long_description,
@@ -21,7 +22,7 @@ setup(
     packages=find_packages(include=["bumblebee", "bumblebee.*"]),
     include_package_data=True,
     install_requires=[
-        "numpy>=2.2.4",  
+        "numpy>=2.2.4",
         "torch>=2.6.0",
         "scipy>=1.15.2",
         "pynput>=1.8.1",

@@ -19,7 +19,7 @@ class Keyboard:
             typing_speed (int): The speed as percentage of what bumblebee types normally.
             consistency (int): The consistency of typing of bumblebee, should be between 0 and 100.
             typo_rate (int): The percentage of typos that bumblebee will make while typing, should be between 0 and 100.
-        
+
         Attributes:
             __typing_speed (float): The typing speed as a percentage (0 to 100).
             __consistency (float): The consistency of typing as a percentage (0 to 100).
@@ -30,7 +30,7 @@ class Keyboard:
             __key_map (dict): A dictionary mapping characters to their positions on the keyboard.
             __shift_chars_maps (dict): A dictionary mapping characters that need the shift key to be pressed.
             __escape_characters_map (dict): A dictionary mapping escape characters for the keyboard.
-        
+
         """
         assert isinstance(typing_speed, int) or isinstance(
             typing_speed, float

@@ -10,7 +10,7 @@ class Keyboard:
         self,
         typing_speed: int | float = 100,
         consistency: int | float = 95,
-        typo_rate: int | float = 3,
+        typo_rate: int | float = 5,
     ):
         """
         Initialize the Keyboard class with typing speed and consistency.
@@ -56,10 +56,10 @@ class Keyboard:
         self.__last_typed_char = (
             None  # To keep track of the last character typed for distance calculation
         )
-
+        # order of following variables should not be changed
         self.__typo = self.__build_typo()
-        self.__key_map = self.__build_key_map()
         self.__shift_chars_maps = self.__build_shift_needed_chars()
+        self.__key_map = self.__build_key_map()
         self.__escape_characters_map = self.__build__escape_characters_map()
 
     def __build__escape_characters_map(self):

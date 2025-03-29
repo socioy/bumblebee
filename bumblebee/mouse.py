@@ -126,26 +126,6 @@ class Mouse:
         assert isinstance(speed, float), "Speed must be a float"
         self.__SPEED = speed
 
-    def hover(self, radius: int, duration: float):
-        """
-        Simulates hovering the mouse cursor at the current position.
-
-        Args:
-            radius (int): The radius of the hover area.
-            duration (float): The duration of the hover in seconds.
-        """
-        # todo: implement hover
-        currentX, currentY = pyautogui.position()
-        start_time = time.time()
-        while True:
-            if time.time() - start_time > duration:
-                break
-            # todo: implement hover
-            self.move(
-                currentX + random.uniform(-radius, radius),
-                currentY + random.uniform(-radius, radius),
-            )
-
     def click(self, button: Any = "left"):
         """
         Simulates a mouse click at the current position.

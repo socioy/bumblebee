@@ -59,7 +59,7 @@ The keyboard simulation is driven by:
 1. Install Bumblebee
 
 ```bash
-pip install bumblebee
+pip install the-bumblebee
 ```
 2. Import the core modules and use them as following:
 

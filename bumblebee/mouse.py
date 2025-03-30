@@ -215,5 +215,5 @@ class Mouse:
             AssertionError: If the button is not "left", "middle", "right", "primary", or "secondary".
         """
         self.move(destX, destY)
-        time.sleep(random.uniform(0.5, 2))
+        time.sleep(random.uniform(0.1, 1.4))
         self.click(button)

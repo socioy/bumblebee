@@ -21,13 +21,6 @@ Bumblebee is an AI-powered Python package that provides **realistic, human-like 
 
 - **Reinforcement Learning (Coming Soon):**  
   Future updates will incorporate RL to further enhance cursor behavior, enabling more diverse and adaptive movement patterns.
-
-- **PyAutoGUI & pynput Integration:**  
-  Leverages [PyAutoGUI](https://pyautogui.readthedocs.io/) and [pynput](https://pynput.readthedocs.io/) for reliable mouse and keyboard event simulation.
-
-- **Built with PyTorch:**  
-  All AI models are developed using PyTorch, ensuring robust and scalable performance.
-
 ---
 
 ## 🚀 How It Works

@@ -71,3 +71,5 @@ venv.bak/
 logs/
 *.log
 .mypy_cache/
+
+test.py
